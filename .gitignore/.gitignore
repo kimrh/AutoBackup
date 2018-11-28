@@ -13,3 +13,12 @@
 *.lastbuildstate
 *.pch
 *.res
+AutoBackup.VC.db
+AutoBackup.opensdf
+AutoBackup.sdf
+AutoBackup/AutoBackup.vcxproj.filters
+AutoBackup/Debug/
+AutoBackup/ReadMe.txt
+Debug/
+Release/
+ipch/
