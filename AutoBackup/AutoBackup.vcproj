@@ -194,6 +194,18 @@
 				>
 			</File>
 			<File
+				RelativePath=".\CompileSetDlg.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\FileCopysetDlg.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\SkdSetDlg.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\stdafx.cpp"
 				>
 				<FileConfiguration
@@ -228,7 +240,19 @@
 				>
 			</File>
 			<File
+				RelativePath=".\CompileSetDlg.h"
+				>
+			</File>
+			<File
+				RelativePath=".\FileCopysetDlg.h"
+				>
+			</File>
+			<File
 				RelativePath=".\Resource.h"
+				>
+			</File>
+			<File
+				RelativePath=".\SkdSetDlg.h"
 				>
 			</File>
 			<File

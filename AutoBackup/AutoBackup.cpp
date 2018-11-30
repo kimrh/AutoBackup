@@ -34,12 +34,34 @@ CAutoBackupApp::CAutoBackupApp()
 	BOOL m_bCheckAllData = FALSE;	// 전체 파일백업 여부	
 	BOOL m_bCheckToday = FALSE;	// 오늘자 생성및 릴리즈복사 여부
 
+/****************************************************************************/
+
+	//컴파일 복사 설정
 	m_strCompileSRCPath = "";	//원본경로
 	m_strCompileDestPath = "";	//복사할경로
 	m_CompileExceptExtensionsMap.RemoveAll();	//예외확장자 리스트
 	m_CompileExceptFilesMap.RemoveAll();	//예외파일 리스트
 	m_CompileListMap.RemoveAll();	//컴파일 대상 리스트
 	m_strComileDate = "";	//컴파일 날짜 설정
+
+	//스케쥴 설정
+	//체크박스 값 저장
+	m_strSKDFileCopyExecYN= "";
+	m_strSKDCompileExecYN= "";
+	m_strSKDBatchExecYN= "";
+	//분 저장
+	m_strSKDFileCopyMinute=0;
+	m_strSKDCompileMinute= 0;
+	m_strSKDBatchMinute = 0;
+	//시간 저장
+	m_strSKDFileCopyTime= "";
+	m_strSKDCompileTime= "";
+
+	//timer
+	m_SystemTimerID = 0;
+	m_FilecopyTimerID = 0;
+	m_CompileTimerID = 0;
+	m_BatchTimerID = 0;
 
 }
 

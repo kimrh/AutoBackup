@@ -48,7 +48,30 @@ public:
 	CMapStringToString m_CompileListMap;	//컴파일 대상 리스트
 	CString m_strComileDate;	//컴파일 날짜 설정
 
+	//스케쥴 설정
+	//체크박스 값 저장
+	CString m_strSKDFileCopyExecYN;
+	CString m_strSKDCompileExecYN;
+	CString m_strSKDBatchExecYN;
+	//분 저장
+	int m_strSKDFileCopyMinute;
+	int m_strSKDCompileMinute;
+	int m_strSKDBatchMinute;
+	//시간 저장
+	CString m_strSKDFileCopyTime;
+	CString m_strSKDCompileTime;
 
+	//timer
+	int m_SystemTimerID;
+	int m_FilecopyTimerID;
+	int m_CompileTimerID;
+	int m_BatchTimerID;
+
+	//틱 저장용
+	long  m_nSKDFileCopyExecIdleTime;
+	long  m_nSKDCompileExecIdleTime;
+	long  m_nSKDBatchExecIdleTime;
+	
 
 	DECLARE_MESSAGE_MAP()
 };

@@ -25,20 +25,14 @@ protected:
 public:
 	CEdit m_EditSRCPath;
 	CEdit m_EditDestPath;
-	CString m_strEditSRCPath;
-	CString m_strEditDestPath;
-
-
 	CButton m_BtnSrcPath;
 	CButton m_BtnDestPath;
 	CButton m_BtnRegst;
 	CButton m_BtnDelete;
 	CEdit m_EditListInput;
 	CComboBox m_ComboCompileCopyList;
-	
 	CButton m_BtnExtensionList;
 	CButton m_BtnExceptList;
-	
 	CDateTimeCtrl m_DateCompileDate;
 	CButton m_ChkComplieDate;
 	CButton m_ChkExtList;
@@ -50,7 +44,4 @@ public:
 	afx_msg void OnBnClickedCheckexcept();
 	afx_msg void OnBnClickedCheckext();
 	afx_msg void OnBnClickedCheckdate();
-	afx_msg void OnBnClickedButtonCompilesrc();
-	afx_msg void OnBnClickedButtonCompilecopysrc();
-	afx_msg void OnBnClickedRgstCompilesetBtn();
 };

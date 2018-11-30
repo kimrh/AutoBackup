@@ -9,6 +9,12 @@
 
 #define CUSTOM_UPDATEDATA WM_USER
 
+//타이머 체크용
+#define	ID_SYSTEMINFO_EXEC_TIME		100			//현재시간 표시
+#define ID_FILECOPY_EXEC_TIME		101			//파일백업복사
+#define ID_COMPILE_EXEC_TIME		102			//컴파일복사
+#define ID_BATCH_EXEC_TIME			103			//BAT파일 실행
+
 // CAutoBackupDlg 대화 상자
 class CAutoBackupDlg : public CDialogEx
 {
@@ -56,6 +62,12 @@ public:
 	CMapStringToString	m_strEndFileDlgMap;		//대상
 	CMapStringToString	m_strReleaseFileDlgMap;	//릴리즈
 
+	/******************************************************************************/
+
+
+
+
+
 	static UINT ThreadAllData(LPVOID lParam);
 	static UINT ThreadSubData(LPVOID lParam);
 	static UINT ThreadMakeTodayData(LPVOID lParam);
@@ -69,6 +81,7 @@ public:
 	void	CopyFromToFileALL(CString szFrom, CString szFromRoot, CString szTo, int nSrc);
 	void	FileReleaseMove(CString strFolderPath, CString strFolderPathsub);
 	BOOL	DeleteEmptyFolder(CString strPath);
+
 	
 	afx_msg LRESULT ForCustomMessageFromThread(WPARAM wParam, LPARAM lParam);
 
@@ -86,4 +99,8 @@ public:
 	afx_msg void OnEnUpdateEditRelpath();
 	afx_msg void OnBnClickedFilecopyseetbtn();
 	afx_msg void OnBnClickedCompilesetbtn();
+	afx_msg void OnTimer(UINT_PTR nIDEvent);
+	afx_msg void OnClose();
+	CStatic m_CurrentTime;
+	afx_msg void OnBnClickedSchedulesetbtn();
 };

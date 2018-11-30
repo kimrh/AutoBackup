@@ -7,6 +7,7 @@
 #include "AutoBackupDlg.h"
 #include "FileCopysetDlg.h"
 #include "CompileSetDlg.h"
+#include "SkdSetDlg.h"
 #include "afxdialogex.h"
 
 #ifdef _DEBUG
@@ -75,6 +76,7 @@ void CAutoBackupDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Text(pDX, IDC_EDIT_STATUS, m_strEditstate);
 	DDX_DateTimeCtrl(pDX, IDC_DATETIMEPICKER1, m_CompileDate);
 	DDX_Control(pDX, IDC_EDIT_RELPATH, m_EditCtrlRelPath);
+	DDX_Control(pDX, IDC_CURRENTTIME_STATIC, m_CurrentTime);
 }
 
 BEGIN_MESSAGE_MAP(CAutoBackupDlg, CDialogEx)
@@ -93,6 +95,9 @@ BEGIN_MESSAGE_MAP(CAutoBackupDlg, CDialogEx)
 	ON_EN_UPDATE(IDC_EDIT_RELPATH, &CAutoBackupDlg::OnEnUpdateEditRelpath)
 	ON_BN_CLICKED(IDC_FILECOPYSEETBTN, &CAutoBackupDlg::OnBnClickedFilecopyseetbtn)
 	ON_BN_CLICKED(IDC_COMPILESETBTN, &CAutoBackupDlg::OnBnClickedCompilesetbtn)
+	ON_WM_TIMER()
+	ON_WM_CLOSE()
+	ON_BN_CLICKED(IDC_SCHEDULESETBTN, &CAutoBackupDlg::OnBnClickedSchedulesetbtn)
 END_MESSAGE_MAP()
 
 
@@ -206,6 +211,16 @@ BOOL CAutoBackupDlg::OnInitDialog()
 	m_ProgressCtrl.SetPos(0);
 
 	UpdateData(FALSE);
+	
+	//타이머 세팅
+	theApp.m_SystemTimerID	= SetTimer(ID_SYSTEMINFO_EXEC_TIME, 1000, NULL);
+	theApp.m_FilecopyTimerID	= SetTimer(ID_FILECOPY_EXEC_TIME, 1000, NULL);
+	theApp.m_CompileTimerID	= SetTimer(ID_COMPILE_EXEC_TIME, 1000, NULL);
+	theApp.m_BatchTimerID		= SetTimer(ID_BATCH_EXEC_TIME, 1000, NULL);
+	theApp.m_nSKDFileCopyExecIdleTime = GetTickCount();
+	theApp.m_nSKDCompileExecIdleTime = GetTickCount();
+	theApp.m_nSKDBatchExecIdleTime = GetTickCount();
+
 	return TRUE;  // 포커스를 컨트롤에 설정하지 않으면 TRUE를 반환합니다.
 }
 
@@ -1181,3 +1196,95 @@ void CAutoBackupDlg::OnBnClickedCompilesetbtn()
 		AfxMessageBox("컴파일 복사 설정 저장 되었습니다");
 	}
 }
+
+void CAutoBackupDlg::OnBnClickedSchedulesetbtn()
+{
+	CSkdSetDlg Dlg;
+	INT_PTR nResult = Dlg.DoModal();
+	if (nResult == IDOK)
+	{
+		AfxMessageBox("스케쥴 설정 저장 되었습니다");
+	}
+}
+
+void CAutoBackupDlg::OnTimer(UINT_PTR nIDEvent)
+{
+
+	if(nIDEvent == ID_SYSTEMINFO_EXEC_TIME )	//시간 표시
+	{
+		CString strDate;
+		CTime ctimeCurrent = CTime::GetCurrentTime();
+		
+		strDate.Format("%04d년 %02d월 %02d일%02d시 %02d분 %02d초",
+			ctimeCurrent.GetYear(),
+			ctimeCurrent.GetMonth(),
+			ctimeCurrent.GetDay(),
+			ctimeCurrent.GetHour(),
+			ctimeCurrent.GetMinute(),
+			ctimeCurrent.GetSecond()
+			);
+		
+		m_CurrentTime.SetWindowText(strDate);
+	}
+	if(nIDEvent == ID_FILECOPY_EXEC_TIME )
+	{
+		if(theApp.m_strSKDFileCopyExecYN =="Y")
+		{
+			long  nStartIdleTime	= GetTickCount();
+			long  nCheckTime		= (nStartIdleTime - theApp.m_nSKDFileCopyExecIdleTime);	
+			DWORD nFilecopyTime		= (theApp.m_strSKDFileCopyMinute * 60000);		// 60 * 1000
+			
+			if	((theApp.m_strSKDFileCopyMinute != 0) && (nFilecopyTime <= nCheckTime))
+			{
+				//파일 복사 실행
+			}
+			theApp.m_nSKDFileCopyExecIdleTime = GetTickCount();
+		}
+
+	}
+	if(nIDEvent == ID_COMPILE_EXEC_TIME )
+	{
+		if(theApp.m_strSKDCompileExecYN == "Y")
+		{
+			long  nStartIdleTime	= GetTickCount();
+			long  nCheckTime		= (nStartIdleTime - theApp.m_nSKDCompileExecIdleTime);	
+			DWORD nFilecopyTime		= (theApp.m_strSKDCompileMinute * 60000);		// 60 * 1000
+
+			if	((theApp.m_strSKDCompileMinute != 0) && (nFilecopyTime <= nCheckTime))
+			{
+				//컴파일 복사 실행
+			}
+			theApp.m_nSKDCompileExecIdleTime = GetTickCount();
+		}
+	}
+	if(nIDEvent == ID_BATCH_EXEC_TIME )
+	{
+		if(theApp.m_strSKDBatchExecYN == "Y" )
+		{
+			long  nStartIdleTime	= GetTickCount();
+			long  nCheckTime		= (nStartIdleTime - theApp.m_nSKDBatchExecIdleTime);	
+			DWORD nFilecopyTime		= (theApp.m_strSKDBatchMinute * 60000);		// 60 * 1000
+
+			if	((theApp.m_strSKDCompileMinute != 0) && (nFilecopyTime <= nCheckTime))
+			{
+				//컴파일 복사 실행
+			}
+			theApp.m_nSKDBatchExecIdleTime = GetTickCount();
+		}
+	}
+
+	CDialogEx::OnTimer(nIDEvent);
+}
+
+void CAutoBackupDlg::OnClose()
+{
+	// TODO: 여기에 메시지 처리기 코드를 추가 및/또는 기본값을 호출합니다..
+	KillTimer(theApp.m_SystemTimerID);
+	KillTimer(theApp.m_FilecopyTimerID);
+	KillTimer(theApp.m_CompileTimerID);
+	KillTimer(theApp.m_BatchTimerID);
+
+	CDialogEx::OnClose();
+}
+
+
