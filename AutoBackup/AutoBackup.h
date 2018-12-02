@@ -46,6 +46,7 @@ public:
 	CMapStringToString m_CompileExceptExtensionsMap;	//예외확장자 리스트
 	CMapStringToString m_CompileExceptFilesMap;	//예외파일 리스트
 	CMapStringToString m_CompileListMap;	//컴파일 대상 리스트
+	CMapStringToString m_CompileCheckListMap;	//컴파일 적용 리스트
 	CString m_strComileDate;	//컴파일 날짜 설정
 
 	//스케쥴 설정

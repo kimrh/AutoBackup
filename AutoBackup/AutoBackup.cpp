@@ -42,6 +42,7 @@ CAutoBackupApp::CAutoBackupApp()
 	m_CompileExceptExtensionsMap.RemoveAll();	//예외확장자 리스트
 	m_CompileExceptFilesMap.RemoveAll();	//예외파일 리스트
 	m_CompileListMap.RemoveAll();	//컴파일 대상 리스트
+	m_CompileCheckListMap.RemoveAll();	//컴파일 적용 리스트
 	m_strComileDate = "";	//컴파일 날짜 설정
 
 	//스케쥴 설정

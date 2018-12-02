@@ -63,8 +63,8 @@ public:
 	CMapStringToString	m_strReleaseFileDlgMap;	//릴리즈
 
 	/******************************************************************************/
-
-
+	CString m_strCompileSRCPath;	// 컴파일원본경로
+	CString m_strCompileRelPath;	// 컴파일릴리즈경로
 
 
 
@@ -73,6 +73,7 @@ public:
 	static UINT ThreadMakeTodayData(LPVOID lParam);
 	static UINT ThreadUIListEditCtrl(LPVOID lParam);	//리스트 에디트박스
 	static UINT CAutoBackupDlg::ThreadSimple(LPVOID lParam);	//20160131 수정본
+	static UINT CAutoBackupDlg::ThreadCompileCopy(LPVOID lParam);	//컴파일 복사
 
 	CWinThread *pThreadDlg;
 	CAutoBackupDlg *pfir;
@@ -103,4 +104,5 @@ public:
 	afx_msg void OnClose();
 	CStatic m_CurrentTime;
 	afx_msg void OnBnClickedSchedulesetbtn();
+	afx_msg void OnBnClickedButtonCompile();
 };

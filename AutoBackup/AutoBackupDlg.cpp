@@ -83,21 +83,27 @@ BEGIN_MESSAGE_MAP(CAutoBackupDlg, CDialogEx)
 	ON_WM_SYSCOMMAND()
 	ON_WM_PAINT()
 	ON_WM_QUERYDRAGICON()
+	
 	ON_MESSAGE(CUSTOM_UPDATEDATA, ForCustomMessageFromThread)
 	ON_BN_CLICKED(IDC_BUTTON_SRC, &CAutoBackupDlg::OnBnClickedButtonSrc)
 	ON_BN_CLICKED(IDC_BUTTON_BACKUP, &CAutoBackupDlg::OnBnClickedButtonBackup)
 	ON_BN_CLICKED(IDC_BUTTON_REL, &CAutoBackupDlg::OnBnClickedButtonRel)
 	ON_BN_CLICKED(IDC_BUTTON_AUTOBACKUP, &CAutoBackupDlg::OnBnClickedButtonAutobackup)
+
 	ON_BN_CLICKED(IDC_CHECK_TODAY, &CAutoBackupDlg::OnBnClickedCheckToday)
 	ON_NOTIFY(DTN_DATETIMECHANGE, IDC_DATETIMEPICKER1, &CAutoBackupDlg::OnDtnDatetimechangeDatetimepicker1)
+	
 	ON_BN_CLICKED(IDOK, &CAutoBackupDlg::OnBnClickedOk)
 	ON_BN_CLICKED(IDCANCEL, &CAutoBackupDlg::OnBnClickedCancel)
+	
 	ON_EN_UPDATE(IDC_EDIT_RELPATH, &CAutoBackupDlg::OnEnUpdateEditRelpath)
 	ON_BN_CLICKED(IDC_FILECOPYSEETBTN, &CAutoBackupDlg::OnBnClickedFilecopyseetbtn)
 	ON_BN_CLICKED(IDC_COMPILESETBTN, &CAutoBackupDlg::OnBnClickedCompilesetbtn)
 	ON_WM_TIMER()
 	ON_WM_CLOSE()
 	ON_BN_CLICKED(IDC_SCHEDULESETBTN, &CAutoBackupDlg::OnBnClickedSchedulesetbtn)
+
+	ON_BN_CLICKED(IDC_BUTTON_COMPILE, &CAutoBackupDlg::OnBnClickedButtonCompile)
 END_MESSAGE_MAP()
 
 
@@ -159,6 +165,36 @@ BOOL CAutoBackupDlg::OnInitDialog()
 	memset(szBuffer, 0, 600);
 	GetPrivateProfileString("Release", "PATH", "", szBuffer, 600, strDebugIniFileName);
 	m_strRelPath = szBuffer;
+
+	//컴파일복사 대상 리스트 불러오기
+	CString strKey, strVal, strTotPth;;
+	
+	int nCount = GetPrivateProfileInt("CompileCopySet", "count", 0, strDebugIniFileName);
+	int i = 0;
+	if (nCount > 0)
+	{
+		for (i = 1; i < nCount+1; i++)
+		{
+			strKey.Format("%d", i);
+			memset(szBuffer, 0, 600);
+			::GetPrivateProfileString("CompileCopySet", strKey, "", szBuffer, 600, strDebugIniFileName);
+
+			strTotPth = szBuffer;
+			int nToken = strTotPth.Find(';');
+			strKey = strTotPth.Left(nToken);
+			strVal = strTotPth.Mid(nToken+1);
+			theApp.m_CompileListMap.SetAt(strKey, strVal);
+
+			memset(szBuffer, 0, 600);
+			::GetPrivateProfileString("CompileCopySet", strKey, "N", szBuffer, 600, strDebugIniFileName);
+			strVal = szBuffer;
+			theApp.m_CompileCheckListMap.SetAt(strKey, strVal);
+		}
+	
+	}
+	
+
+
 
 
 	int nVal = GetPrivateProfileInt("AllCheck", "VALUE", 0, strDebugIniFileName);
@@ -959,8 +995,8 @@ void CAutoBackupDlg::CopyFromToFileALL(CString szFrom, CString szFromRoot, CStri
 		if (cFileFinder.IsDirectory() == TRUE)
 		{
 			CreateDirectory(szTo + _T("\\") + strFName, NULL);
-			pfir->m_strEditstate = pfir->m_strEditstate + "\r\n" + szTo + _T("-->\\") + strFName + " ::CopyFromToFileALL ";
-			pfir->SendMessage(CUSTOM_UPDATEDATA, 0, 0);
+			//pfir->m_strEditstate = pfir->m_strEditstate + "\r\n" + szTo + _T("-->\\") + strFName + " ::CopyFromToFileALL ";
+			//pfir->SendMessage(CUSTOM_UPDATEDATA, 0, 0);
 			CopyFromToFileALL(szFrom + _T("\\") + strFName, szFromRoot, szTo + _T("\\") + strFName, nSrc);	//하위폴더
 		}
 		else //if(cFileFinder.IsArchived())
@@ -972,11 +1008,57 @@ void CAutoBackupDlg::CopyFromToFileALL(CString szFrom, CString szFromRoot, CStri
 				//	pfir->m_strState = pfir->m_strState + "\r\n" + strFName, szTo + _T("\\") + strFName;
 				//	pfir->SendMessage(CUSTOM_UPDATEDATA, 0, 0);
 			}
+			else if (nSrc == 99)	//컴파일 복사
+			{
+				CString strReturnValTmp = "";
+				CString strFilePath = "";
+				CString exceptFileName = "";
+				CString exceptFileExt = "";
+
+				if (szFrom.GetLength() > szFromRoot.GetLength())
+					strFilePath = szFrom.Mid(szFromRoot.GetLength() + 1);
+				else
+					strFilePath = "";
+
+				//Root check
+				CString strRootCheck = szFromRoot.Mid(szFromRoot.ReverseFind('\\'));
+
+				CString strFindFile = "";
+				if (strFilePath == "")
+					strFindFile = strFName;
+				else
+					strFindFile = strFilePath + "\\" + strFName;
+
+				
+
+				int fileDot = strFName.Find('.');
+				if (fileDot > 0)
+				{
+					exceptFileName = strFName.Left(fileDot);
+					exceptFileExt = strFName.Mid(fileDot + 1);
+				}
+
+				if (exceptFileExt != "dat" && exceptFileName != "ErrorReport" )
+				{
+					::CopyFile(szFrom + _T("\\") + strFName, szTo + _T("\\") + strFName, FALSE); 
+
+					pfir->m_strEditstate = pfir->m_strEditstate + "\r\n" + strFindFile + " compile copy";
+					pfir->SendMessage(CUSTOM_UPDATEDATA, 0, 0);
+				}
+				else
+				{
+					pfir->m_strEditstate = pfir->m_strEditstate + "\r\n" + strFindFile + " :: except file";
+					pfir->SendMessage(CUSTOM_UPDATEDATA, 0, 0);
+				}
+				 
+
+
+			}
 			else if (nSrc == 1 || nSrc == 2 || nSrc == 9)	//동일 파일 , 오늘날짜 생성/수정 파일, 20160131 수정본
 			{
 
-				pfir->m_strEditstate = pfir->m_strEditstate + "\r\n" + szFrom + "-->" + szTo + " :: File 9 ";
-				pfir->SendMessage(CUSTOM_UPDATEDATA, 0, 0);
+			//	pfir->m_strEditstate = pfir->m_strEditstate + "\r\n" + szFrom + "-->" + szTo + " :: File 9 ";
+			//	pfir->SendMessage(CUSTOM_UPDATEDATA, 0, 0);
 
 				CString strReturnValTmp = "";
 				CString strFilePath ="";
@@ -985,8 +1067,8 @@ void CAutoBackupDlg::CopyFromToFileALL(CString szFrom, CString szFromRoot, CStri
 				else
 					strFilePath = "";
 
-				pfir->m_strEditstate = pfir->m_strEditstate + "\r\n" + strFilePath + " :: strFilePath ";
-				pfir->SendMessage(CUSTOM_UPDATEDATA, 0, 0);
+			//	pfir->m_strEditstate = pfir->m_strEditstate + "\r\n" + strFilePath + " :: strFilePath ";
+			//	pfir->SendMessage(CUSTOM_UPDATEDATA, 0, 0);
 				
 				//1 : 동일파일, 2 :오늘날짜 생성/수정 파일
 				if (nSrc == 1)
@@ -1035,7 +1117,7 @@ void CAutoBackupDlg::CopyFromToFileALL(CString szFrom, CString szFromRoot, CStri
 						strFindFile = strFilePath + "\\" + strFName;
 
 					m_strEndFileDlgMap.Lookup(strFindFile, strReturnValTmp);
-					pfir->m_strEditstate = pfir->m_strEditstate + "\r\n" + strFindFile + " File find list";
+					pfir->m_strEditstate = pfir->m_strEditstate + "\r\n" + strFindFile + " File find list::"+strFilePath;
 					pfir->SendMessage(CUSTOM_UPDATEDATA, 0, 0);
 				}
 
@@ -1288,3 +1370,105 @@ void CAutoBackupDlg::OnClose()
 }
 
 
+
+
+void CAutoBackupDlg::OnBnClickedButtonCompile()
+{
+	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
+	//UpdateData(TRUE);
+	m_strEditstate = "";
+	//theApp.m_CompileListMap
+	CString strKey = "";
+	CString strVal = "";
+	CString strsrc = "";
+	CString strDest = "";
+
+	POSITION pos = theApp.m_CompileCheckListMap.GetStartPosition();
+	while (pos)
+	{
+		strKey = "";
+		strVal = "";
+		strsrc = "";
+		strDest = "";
+		theApp.m_CompileCheckListMap.GetNextAssoc(pos, strKey, strVal);
+		if (strVal == "Y")
+		{
+			theApp.m_CompileListMap.Lookup(strKey, strVal);
+			int nToken = strVal.Find(';');
+			m_strCompileSRCPath = strVal.Left(nToken);
+			m_strCompileRelPath = strVal.Mid(nToken + 1);
+
+			m_strEditstate = m_strEditstate + "\r\n" + strKey + " <<< compile copy start>>>>>> ";
+			SendMessage(CUSTOM_UPDATEDATA, 0, 0);
+
+			if (m_strCompileSRCPath != ""  && m_strCompileRelPath != "")
+			{
+				
+
+				pThreadDlg = AfxBeginThread(ThreadCompileCopy, this);
+
+				if (pThreadDlg == NULL)
+				{
+					GetDlgItem(IDC_BUTTON_AUTOBACKUP)->EnableWindow(TRUE);
+
+					GetDlgItem(IDOK)->EnableWindow(TRUE);
+
+					GetDlgItem(IDC_BUTTON_BACKUP)->EnableWindow(TRUE);
+					GetDlgItem(IDC_BUTTON_SRC)->EnableWindow(TRUE);
+					GetDlgItem(IDC_BUTTON_REL)->EnableWindow(TRUE);
+
+					GetDlgItem(IDC_EDIT_RELPATH)->EnableWindow(TRUE);
+					GetDlgItem(IDC_EDIT_SRCPATH)->EnableWindow(FALSE);
+					GetDlgItem(IDC_EDIT_BACKUPPATH)->EnableWindow(FALSE);
+					return;
+				}
+
+
+				CloseHandle(pThreadDlg->m_hThread);
+				pThreadDlg->m_hThread = NULL;
+
+
+
+			}
+			else
+				AfxMessageBox("소스,백업,릴리즈 경로 입력하세요");
+
+		}
+		else
+		{
+			m_strEditstate = m_strEditstate + "\r\n" + strKey+ " is not settting compile copy list. ";
+			SendMessage(CUSTOM_UPDATEDATA, 0, 0);
+		}
+
+	}
+
+	
+}
+
+
+
+UINT CAutoBackupDlg::ThreadCompileCopy(LPVOID lParam)
+{
+	CAutoBackupDlg *pfir = (CAutoBackupDlg*)lParam;
+	CString strFilecnt;
+	CAutoBackupDlg *pDlg = (CAutoBackupDlg*)AfxGetApp()->m_pMainWnd;
+	pfir->m_strEditstate = "";
+	pDlg->nFilecount = 0;
+
+	pfir->m_strEditstate = pfir->m_strEditstate + "\r\n" +" <<<<< compile cpoy  start. >>>>>";
+	pfir->SendMessage(CUSTOM_UPDATEDATA, 0, 0);
+
+	pDlg->CopyFromToFileALL(pDlg->m_strCompileSRCPath, pDlg->m_strCompileSRCPath, pDlg->m_strCompileRelPath, 99);
+	pDlg->DeleteEmptyFolder(pDlg->m_strCompileRelPath);
+
+	
+	pfir->m_strEditstate = pfir->m_strEditstate + "\r\n" + "<<<<< Complete... compile copy end >>>>> ";
+	pfir->SendMessage(CUSTOM_UPDATEDATA, 0, 0);
+
+
+	pDlg->GetDlgItem(IDC_BUTTON_AUTOBACKUP)->EnableWindow(TRUE);
+	pDlg->GetDlgItem(IDOK)->EnableWindow(TRUE);
+
+
+	return 0;
+}

@@ -15,10 +15,15 @@ public:
 
 	virtual BOOL PreTranslateMessage(MSG* pMsg);
 
+
+	void SetcomboboxData();
+
+
 // 대화 상자 데이터입니다.
 	enum { IDD = IDD_COMPILESET_DIALOG };
 
 protected:
+
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV 지원입니다.
 
 	DECLARE_MESSAGE_MAP()
@@ -40,8 +45,22 @@ public:
 	
 	CEdit m_EditCompileLog;
 
+	CButton m_CheckListAcceptYN;
+
+	char szBuffer[600];
+	
+
+	CString m_strCompileSRCPath;
+	CString m_strCompileDestPath;
 
 	afx_msg void OnBnClickedCheckexcept();
 	afx_msg void OnBnClickedCheckext();
 	afx_msg void OnBnClickedCheckdate();
+	afx_msg void OnBnClickedRgstCompilesetBtn();
+	afx_msg void OnCbnSelchangeCombo1();
+	afx_msg void OnBnClickedButtonCompilesrc();
+	afx_msg void OnBnClickedButtonCompiledesc();
+	virtual BOOL OnInitDialog();
+
+	
 };
